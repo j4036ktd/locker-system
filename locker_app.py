@@ -36,8 +36,12 @@ cookie_name = st.secrets["COOKIE_NAME"]
 cookie_key = st.secrets["COOKIE_KEY"]
 
 # 3. 認証オブジェクトを作成
+# ★★★ 修正点 1 ★★★
+# credentials (username/password) は空でも辞書として渡す
+credentials = {'usernames': {}} 
+
 authenticator = stauth.Authenticate(
-    {'google': {'client_id': google_client_id, 'client_secret': google_client_secret}},
+    credentials, # <--- 修正（空の辞書を渡す）
     cookie_name,
     cookie_key,
     3600, # cookieの有効期限（秒）
@@ -46,24 +50,28 @@ authenticator = stauth.Authenticate(
 st.title('ロッカー管理システム')
 
 # 4. ログイン・ログアウトボタンを表示
-# 'google' はプロバイダー名, 'Login with Google' はボタンに表示されるテキスト
-# st.empty() を使うと、ログイン後にボタンを非表示にできます
 login_placeholder = st.empty()
 with login_placeholder:
-    authenticator.login('google', 'Login with Google')
+    # ★★★ 修正点 2 ★★★
+    # ログインメソッドにGoogleのキー(client_id, client_secret)を渡す
+    authenticator.login(
+        'google', 
+        'Login with Google',
+        fields={'google': {'client_id': google_client_id, 'client_secret': google_client_secret}} # <--- 修正
+    )
 
 # --- 認証ステータスの確認 ---
-# st.session_state["authentication_status"] が True の場合、ログイン成功
 if st.session_state["authentication_status"]:
     login_placeholder.empty() # ログインボタンを消す
     
-    # ログインしたユーザー名とログアウトボタンを表示
     with st.container():
         st.write(f'Welcome *{st.session_state["name"]}*')
         authenticator.logout('Logout', 'main')
 
     # --- 5. タブの作成（ログイン成功時のみ表示） ---
     tab1, tab2 = st.tabs(["🗂️ 閲覧・登録用", "🔒 管理者用"])
+    
+    # ( ... ここから下のロッカー管理のコードは変更ありません ...)
     
     # ---------------------------------
     # --- tab1 (閲覧・登録用) の中身 ---
@@ -104,8 +112,6 @@ if st.session_state["authentication_status"]:
     # ---------------------------------
     # --- tab2 (管理者用) の中身 ---
     # ---------------------------------
-    # ★★★ ここが重要 ★★★
-    # ログインしている時だけ、管理者タブの中身を表示
     with tab2:
         st.header('管理者パネル')
         
@@ -179,6 +185,7 @@ if st.session_state["authentication_status"]:
                 cols[3].text("")
 
 elif st.session_state["authentication_status"] is False:
-    st.error('Username/password is incorrect')
+    st.error('Username/password is incorrect') # ログイン失敗
 elif st.session_state["authentication_status"] is None:
-    st.warning('Please enter your username and password')
+    st.info('Please login to access the app') # 初期画面
+
