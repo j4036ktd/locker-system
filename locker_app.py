@@ -36,15 +36,23 @@ cookie_name = st.secrets["COOKIE_NAME"]
 cookie_key = st.secrets["COOKIE_KEY"]
 
 # 3. 認証オブジェクトを作成
-credentials = {'usernames': {}} 
-social_credentials = {'google': {'client_id': google_client_id, 'client_secret': google_client_secret}}
+# ★★★ 修正点 ★★★
+# 'usernames' と 'social_logins' を *1つの* 辞書にまとめる
+credentials = {
+    'usernames': {}, # 従来のパスワードログイン用（空でも必須）
+    'social_logins': { # ソーシャルログイン用
+        'google': {
+            'client_id': google_client_id,
+            'client_secret': google_client_secret
+        }
+    }
+}
 
 authenticator = stauth.Authenticate(
-    credentials,
-    social_credentials, 
-    cookie_name,
-    cookie_key,
-    3600, 
+    credentials,      # 1. 結合した辞書
+    cookie_name,      # 2. クッキー名 (string)
+    cookie_key,       # 3. クッキーキー (string)
+    3600              # 4. 有効期限 (int)
 )
 
 st.title('ロッカー管理システム')
@@ -52,10 +60,9 @@ st.title('ロッカー管理システム')
 # 4. ログイン・ログアウトボタンを表示
 login_placeholder = st.empty()
 with login_placeholder:
-    # ★★★ 修正点 ★★★
-    # location='main' を指定するだけで、Googleボタンも自動で表示されます
+    # この部分は正しかったので変更なし
     authenticator.login(
-        location='main' # <--- 修正
+        location='main'
     )
 
 # --- 認証ステータスの確認 ---
@@ -149,7 +156,7 @@ if st.session_state["authentication_status"]:
             locker_no_del = st.selectbox('削除するロッカーを選択してください:', used_locker_list, key='del_locker_select')
             
             if st.button('このロッカーの使用者を削除する', type="primary", key='del_button_pulldown'):
-                df_lockers.loc[df_lockers['Locker No.'] == locker_no_del, ['Student ID', 'Name']] = [np.nan, np.nan]
+                df_lockers.loc[df_lockERS['Locker No.'] == locker_no_del, ['Student ID', 'Name']] = [np.nan, np.nan]
                 st.session_state.df = df_lockers 
                 st.success(f"【削除完了】ロッカー '{locker_no_del}' の使用者情報を削除しました。")
                 st.rerun()
