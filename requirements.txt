@@ -2,3 +2,5 @@ streamlit==1.30.0
 streamlit-authenticator
 PyYAML
 extra-streamlit-components
+# この行は重要ではありませんが、あった方が良い
+pandas
