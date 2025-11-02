@@ -39,9 +39,12 @@ cookie_key = st.secrets["COOKIE_KEY"]
 # ★★★ 修正点 1 ★★★
 # credentials (username/password) は空でも辞書として渡す
 credentials = {'usernames': {}} 
+# social_credentials (Google) も辞書として渡す
+social_credentials = {'google': {'client_id': google_client_id, 'client_secret': google_client_secret}}
 
 authenticator = stauth.Authenticate(
-    credentials, # <--- 修正（空の辞書を渡す）
+    credentials,
+    social_credentials, # <--- 修正: 2番目の引数として渡す
     cookie_name,
     cookie_key,
     3600, # cookieの有効期限（秒）
@@ -53,11 +56,11 @@ st.title('ロッカー管理システム')
 login_placeholder = st.empty()
 with login_placeholder:
     # ★★★ 修正点 2 ★★★
-    # ログインメソッドにGoogleのキー(client_id, client_secret)を渡す
+    # location='main' を指定し、不要な fields 引数を削除
     authenticator.login(
         'google', 
         'Login with Google',
-        fields={'google': {'client_id': google_client_id, 'client_secret': google_client_secret}} # <--- 修正
+        location='main' # <--- 修正
     )
 
 # --- 認証ステータスの確認 ---
@@ -185,7 +188,6 @@ if st.session_state["authentication_status"]:
                 cols[3].text("")
 
 elif st.session_state["authentication_status"] is False:
-    st.error('Username/password is incorrect') # ログイン失敗
+    st.error('Login failed.') # ログイン失敗
 elif st.session_state["authentication_status"] is None:
     st.info('Please login to access the app') # 初期画面
-
