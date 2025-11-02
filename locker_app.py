@@ -36,18 +36,15 @@ cookie_name = st.secrets["COOKIE_NAME"]
 cookie_key = st.secrets["COOKIE_KEY"]
 
 # 3. 認証オブジェクトを作成
-# ★★★ 修正点 1 ★★★
-# credentials (username/password) は空でも辞書として渡す
 credentials = {'usernames': {}} 
-# social_credentials (Google) も辞書として渡す
 social_credentials = {'google': {'client_id': google_client_id, 'client_secret': google_client_secret}}
 
 authenticator = stauth.Authenticate(
     credentials,
-    social_credentials, # <--- 修正: 2番目の引数として渡す
+    social_credentials, 
     cookie_name,
     cookie_key,
-    3600, # cookieの有効期限（秒）
+    3600, 
 )
 
 st.title('ロッカー管理システム')
@@ -55,17 +52,15 @@ st.title('ロッカー管理システム')
 # 4. ログイン・ログアウトボタンを表示
 login_placeholder = st.empty()
 with login_placeholder:
-    # ★★★ 修正点 2 ★★★
-    # location='main' を指定し、不要な fields 引数を削除
+    # ★★★ 修正点 ★★★
+    # location='main' を指定するだけで、Googleボタンも自動で表示されます
     authenticator.login(
-        'google', 
-        'Login with Google',
         location='main' # <--- 修正
     )
 
 # --- 認証ステータスの確認 ---
 if st.session_state["authentication_status"]:
-    login_placeholder.empty() # ログインボタンを消す
+    login_placeholder.empty() # ログインフォームを消す
     
     with st.container():
         st.write(f'Welcome *{st.session_state["name"]}*')
