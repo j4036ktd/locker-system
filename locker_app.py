@@ -35,12 +35,17 @@ google_client_secret = st.secrets["GOOGLE_CLIENT_SECRET"]
 cookie_name = st.secrets["COOKIE_NAME"]
 cookie_key = st.secrets["COOKIE_KEY"]
 
+# ★★★ 最終修正点：リダイレクトURIの追加 ★★★
+# https://locker-system.streamlit.app/ はアプリのURLです
+GOOGLE_REDIRECT_URI = "https://locker-system.streamlit.app/"
+
 credentials = {
     'usernames': {},
     'social_logins': {
         'google': {
             'client_id': google_client_id,
-            'client_secret': google_client_secret
+            'client_secret': google_client_secret,
+            'redirect_uri': GOOGLE_REDIRECT_URI # ここでリダイレクトURIを指定
         }
     }
 }
@@ -54,15 +59,14 @@ authenticator = stauth.Authenticate(
 
 st.title('ロッカー管理システム')
 
-# --- 3. 管理者メールアドレスの設定 ---
-# あなたの管理者アドレスをここに設定します
+# 3. 管理者メールアドレスの設定
 ADMIN_EMAIL = "codelabproject315@gmail.com"
 
 # 認証フォーム表示用のプレースホルダー
 login_placeholder = st.empty()
 
 
-# --- 4. タブのコンテンツ関数定義 ---
+# --- 4. タブのコンテンツ関数定義 (変更なし) ---
 
 def display_viewer_tab():
     """閲覧・登録用タブの内容を定義する関数（認証不要）"""
@@ -96,7 +100,7 @@ def display_viewer_tab():
             else:
                 df_lockers.loc[df_lockers['Locker No.'] == locker_no_reg_tab1, ['Student ID', 'Name']] = [student_id_reg_tab1, name_reg_tab1]
                 st.session_state.df = df_lockers 
-                st.success(f"【登録完了】ロッカー '{locker_no_reg_tab1}' に '{name_name_tab1}' さんを登録しました。")
+                st.success(f"【登録完了】ロッカー '{locker_no_reg_tab1}' に '{name_reg_tab1}' さんを登録しました。")
                 st.rerun()
 
 def display_admin_tab():
@@ -204,6 +208,7 @@ else:
     # 未ログインの場合、ログインフォームを表示
     if st.session_state["authentication_status"] is None:
         with login_placeholder.container():
+            # フォームとGoogleボタンを表示する
             authenticator.login(location='main')
             st.info('管理者の方は、Googleアカウントでログインすると「管理者用」タブが表示されます。')
     elif st.session_state["authentication_status"] is False:
